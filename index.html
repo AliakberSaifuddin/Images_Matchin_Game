@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Jquery Game</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+	<link rel="stylesheet" type="text/css" href="style.css">
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.0/jquery.min.js"></script>
+
+	<script>
+		var round_no = 1;
+		var round_score = 0;
+		var round_correct = 0;
+		var round_incorrect = 0;
+
+		var total_correct_matches = 0;
+		var total_incorrect_matches = 0;
+		var total_score = 0;
+
+		$("document").ready(()=>{		
+			setView();
+		});
+
+		function applyEvents(){
+
+			$(".animalEventHandler").on("drop" ,function(e){
+				e.originalEvent.preventDefault();
+				event = e.originalEvent;
+
+				var data = event.dataTransfer.getData("text");
+				if(data != event.target.id){
+					if(data.slice(0,data.length-1) === event.target.id.slice(0,data.length-1))
+					{
+						total_correct_matches++;
+						round_correct++;
+						$("."+data.slice(0,data.length-1)).show();
+						$("#myAudio")[0].play();
+						$("."+data.slice(0,data.length-1)).parent().children().attr( 'draggable', 'false' );
+						prv_src = event.target.src
+						event.target.src = document.getElementById(data).src;
+						document.getElementById(data).src = prv_src;
+					}
+					else{
+						$("#myAudio")[0].play();
+						total_incorrect_matches++;
+						round_incorrect++;
+					}
+					console.log(round_correct);
+					if(round_correct === 6){
+						if(round_no === 3){
+							gameEnd();
+						}else{
+							round_no++;
+							console.log("here");
+							startRound();
+						}
+					}
+					round_score = round_correct*5 - round_incorrect*5;
+					total_score = total_correct_matches*5 - total_incorrect_matches*5;
+					settingScore();
+				}			
+			});
+
+			$(".animalEventHandler").on("dragover", function(e){
+				e.originalEvent.preventDefault();
+			});
+
+			$(".animalEventHandler").on("dragstart", function(e) {
+	   	    	e.originalEvent.dataTransfer.setData("text", e.target.id);
+			});
+		}
+
+	
+	
+	</script>
+
+
+</head>
+<body>
+
+	<audio id="myAudio">
+	  <source src="hooray.mp3" type="audio/mpeg">
+	</audio>
+
+	<div class="container" id="starter">
+		<p id="starter-timer"></p>
+		<div id="game-starter">	
+			<h1>Animal Matcing Game</h1>
+			<h3 class="alert alert-secondary">Instructions</h3>
+
+			<ul>
+				<li class="alert alert-success">On Correct Match <strong>+5</strong></dt>
+				<li class="alert alert-danger">On Incorrect Match <strong>-5</strong></li>
+				<li class="alert alert-warning">Once Game Started there will be consecutively 3 rounds
+				
+				<ul>
+					<li>Round 1 :  <strong>10 minutes</strong></li>
+					<li>Round 2 :  <strong>7 minutes</strong></li>
+					<li>Round 3 :  <strong>4 minutes</strong></li>
+				</ul>
+				<li class="list-unstyled">
+					<button class="btn btn-lg btn-primary" onclick="startRound()">Start Round :)</button>
+				</li>
+			</ul>
+		</div>		
+	</div>
+
+	<div class="container" id="game-screen">
+		<div class="row" id="dragger-row">
+
+			<!-- Here Images will be placed all draggrable -->
+
+		</div>
+		<div class="row mt-4 mt-4">
+			<div class="col-md-4">
+				<h4>Level:</h4>
+				<p id="round-no"></p>
+			</div>
+			<div class="col-md-4" id="drag-drop">
+				<img src="images/drag-drop.jpg" class="img-fluid">
+			</div>
+			<div class="col-md-4">
+				<h4>Time Left:</h4>
+				<div id="demo"></div>
+			</div>
+		</div>
+		<div class="row" id="dropper-row">
+
+			<!-- Here Images will be placed all draggrable -->
+
+		</div>
+		<div class="mt-3" id="score-board">
+			<dl class="row">
+				<dt class="col-md-2 alert alert-success">Correct Match:</dt>
+				<dd class="col-md-1" id="correct_match"></dd>
+
+				<dt class="col-md-2 alert alert-danger">Incorrect Match:</dt>
+				<dd class="col-md-1" id="incorrect_match"></dd>
+
+				<dt class="col-md-2 alert alert-primary">Round Score:</dt>
+				<dd class="col-md-1" id="round_score"></dd>
+
+				<dt class="col-md-2 alert alert-dark">Total Score:</dt>
+				<dd class="col-md-1" id="total_score"></dd>
+
+			</dl>
+		</div>
+	</div>
+
+	<div id="game-end">
+		<div class="container">
+			<h3 class="col-md-6 offset-md-3">Game Ended !</h3>
+			<dl class="row">	
+				<dt class="col-md-4 offset-md-3 alert alert-success">Total Correct Match:</dt>
+				<dd class="col-md-2 correct-match"></dd>
+
+				<dt class="col-md-4 offset-md-3 alert alert-danger"> Total Incorrect Match:</dt>
+				<dd class="col-md-2 incorrect-match"></dd>
+
+				<dt class="col-md-4 offset-md-3 alert alert-dark">Total Score:</dt>
+				<dd class="col-md-2 total-score"></dd>
+
+			</dl>
+		</div>
+	</div>
+
+<script>
+
+	function setView(){
+		$("#game-screen").hide();
+		$("#game-starter").hide();
+		var start = 5;
+
+			var timer = setInterval(function() {
+		     $("#starter-timer").text(start);
+		     start--;
+
+		    if(start === -1) {
+		        clearInterval(timer);
+		        $("#starter-timer").hide();
+		        $("#game-starter").show();
+
+		  	   //DO STUFF HERE
+		    }
+		}, 1000);
+	}
+
+	function settingScore(){
+		$("#correct_match").text(total_correct_matches);
+		$("#incorrect_match").text(total_incorrect_matches);
+		$("#round_score").text(round_score);
+		$("#total_score").text(total_score);
+		$("#round-no").text(round_no);
+		
+	}
+
+	function startRound(){
+
+		if(round_no === 1){
+			$("#starter").hide();
+			$("#game-screen").show();
+			settingRound();
+			applyEvents();
+			setRoundTime(600);
+			settingScore();
+
+		}
+		else
+		if(round_no === 2){
+			round_score = 0;
+			round_correct = 0;
+			round_incorrect = 0;
+			settingRound();
+			applyEvents();
+			setRoundTime(420);
+			settingScore();
+		}
+		else
+		if(round_no === 3){
+			round_score = 0;
+			round_correct = 0;
+			round_incorrect = 0;
+			settingRound();
+			applyEvents();
+			setRoundTime(240);
+			settingScore();
+		}
+
+	}
+
+	function settingRound(){
+		var arr1 = ["cat1","dog1","fish1","monkey1","mouse1","pigeon1"];
+		var arr2 = ["cat2","dog2","fish2","monkey2","mouse2","pigeon2"];
+
+		arr1 = shuffle(arr1);
+		arr2 = shuffle(arr2);
+		
+		$("#dragger-row").empty();
+		$("#dropper-row").empty();
+
+		for(var i=0; i<6; i++){	
+			$("#dragger-row").append(`<div class="col-md-2">																				
+										<img src="images/match.png"  class="${arr1[i].slice(0,arr1[i].length-1)} match animalEventHandler" />
+										<img id="${arr1[i]}" src="images/${arr1[i]}.jpg" draggable="true" class="animalEventHandler" />
+									</div>`);
+			$("#dropper-row").append(`<div class="col-md-2">																					
+										<img src="images/match.png"  class="${arr2[i].slice(0,arr2[i].length-1)} match animalEventHandler" />
+										<img id="${arr2[i]}" src="images/${arr2[i]}.jpg" class="animalEventHandler" />
+									</div>`);
+		}
+		$(".match").hide();
+	}
+
+
+
+	function shuffle(array) {
+
+	var currentIndex = array.length;
+	var temporaryValue, randomIndex;
+
+	// While there remain elements to shuffle...
+	while (0 !== currentIndex) {
+		// Pick a remaining element...
+		randomIndex = Math.floor(Math.random() * currentIndex);
+		currentIndex -= 1;
+
+		// And swap it with the current element.
+		temporaryValue = array[currentIndex];
+		array[currentIndex] = array[randomIndex];
+		array[randomIndex] = temporaryValue;
+	}
+
+	return array;
+
+};
+var timer;
+function setRoundTime(r_time){
+	window.clearInterval(timer);
+	if(timer){
+		window.clearInterval(timer);
+	}
+	var start = r_time;// 10 minutes
+	var i=1;
+	timer = setInterval(function() {
+	     $('#demo').text( Math.floor((start - i) / 60) + " Minutes " + ((start - i) % 60 ) +" Seconds");
+	     i++;
+
+	    if(start === i) {
+	    	
+	        window.clearInterval(timer);
+	        gameEnd();
+	        //DO STUFF HERE
+	    }
+
+	}, 1000);
+}
+
+function gameEnd(){
+	$("#starter").hide();
+	$("#game-screen").hide();
+	$("#game-end").show();
+	console.log($(".correct-match"));
+	$(".correct-match").text(total_correct_matches);
+	$(".incorrect-match").text(total_incorrect_matches);
+	$(".total-score").text(total_correct_matches*5 - total_incorrect_matches*5);
+	
+}
+	
+</script>
+
+</body>
+</html>

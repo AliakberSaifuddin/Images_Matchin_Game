@@ -1,0 +1,41 @@
+
+#starter-timer{
+	position:absolute;
+	left:45%;
+	right:50%;
+	top:30%;
+	font-size:125px;
+}
+
+
+#game-end img, #game-screen img{
+	border:1px solid black;
+	width:200px; 
+	height:150px;
+	animation: rotation 1s linear ;
+}
+
+#game-screen .match{
+	position:absolute;
+	border:0px solid white; !important
+}
+
+#game-end{
+	display: none
+}
+
+#drag-drop img {
+	border:0px;
+	width:100px;
+	height:100px;	
+}
+
+
+@keyframes rotation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(359deg);
+  }
+}
